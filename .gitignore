@@ -9,6 +9,7 @@
 # db files
 *.db
 
+
 # Build results
 
 [Dd]ebug/
@@ -16,6 +17,7 @@
 x64/
 [Bb]in/
 [Oo]bj/
+out
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
