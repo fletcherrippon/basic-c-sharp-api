@@ -4,7 +4,7 @@ WORKDIR /source
 
 COPY . .
 
-RUN dotnet publish-o /app
+RUN dotnet publish -o /app
 
 # final stage/image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
