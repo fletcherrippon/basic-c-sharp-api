@@ -1,10 +1,13 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using BasicAPI.Todo;
 using Microsoft.OpenApi.Models;
-
-await using var todosDB = new TodoContext();
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<TodoContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("TodoContext")));
+
+builder.Services.AddScoped<TodoService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -20,57 +23,8 @@ app.UseSwaggerUI(c =>
        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Todo API V1");
    });
 
-app.MapGet("/", () => "Hello World!!!");
-app.MapGet("/json", () => new { Name = "JSON", Description = "This is an example JSON object response" });
-// Todos
-app.MapGet("/todos", () =>
-{
-    var todos =
-        from todo in todosDB.TodoItems
-        select new { todo.Id, todo.Name, todo.IsComplete };
-
-    return Results.Ok(todos);
-});
-
-app.MapGet("/todos/{id}", ([FromRoute] int id) =>
-{
-    var todo = todosDB.TodoItems.Find(id);
-    if (todo == null)
-    {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(todo);
-});
-
-app.MapPost("/todos", ([FromBody] CreateTodoItem todoData) =>
-{
-    var newTodo = new TodoItem
-    {
-        Name = todoData.Name,
-        IsComplete = todoData.IsComplete
-    };
-
-    todosDB.TodoItems.Add(newTodo);
-    todosDB.SaveChanges();
-
-    return Results.Created($"/todos/{newTodo.Id}", newTodo);
-});
-
-app.MapPut("/todos/{id}/toggle-complete", ([FromRoute] int id) =>
-{
-    var todo = todosDB.TodoItems.Find(id);
-    if (todo == null)
-    {
-        return Results.NotFound();
-    }
-
-    todo.IsComplete = !todo.IsComplete;
-
-    todosDB.SaveChanges();
-
-    return Results.NoContent();
-});
+// Define the routes for the API
+TodoController.DefineRoutes(app);
 
 app.Run();
 
